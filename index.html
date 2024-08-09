@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reading List</title>
+  <style>
+    :root {
+      --text: #0a0406;
+      --background: #faf4f6;
+      --primary: #b85e7a;
+      --accent: #fef0f1;
+    }
+    
+    body {
+      width: 300px;
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      margin: 0;
+      background-color: var(--accent);
+      color: var(--text);
+    }
+    
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: var(--primary);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    
+    button:hover {
+      color: var(--primary);
+      background-color: var(--background);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    h1 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+    
+    ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    li {
+      margin: 10px 0;
+    }
+    
+    a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Reading List</h1>
+  <button id="addButton">Add Current Tab</button>
+  <ul id="readingList"></ul>
+  <script src="popup.js"></script>
+</body>
+</html>
