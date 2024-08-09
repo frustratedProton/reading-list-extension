@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "Reading List",
-	"version": "1.0",
+	"version": "2.0",
 	"description": "Add the current page to a reading list and view the list.",
 	"permissions": ["storage", "activeTab"],
 	"background": {
