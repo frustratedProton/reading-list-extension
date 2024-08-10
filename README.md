@@ -4,6 +4,8 @@
 
 The Reading List Browser Extension is a simple tool for managing URLs of web pages you want to revisit. With this extension, you can easily add the current tab's URL to a reading list by clicking a button. The extension displays a list of saved URLs in the popup, allowing you to view or open them later.
 
+> This extension might break after manifest v3, i dont 't plan on making it compatible with it. Might do that some time in the future.
+
 ## Features
 
 - **Add Current Tab URL:** Click the "Add" button to save the URL and title of the current tab.
@@ -37,6 +39,8 @@ The Reading List Browser Extension is a simple tool for managing URLs of web pag
 3. Click on **This Firefox** (or **This Nightly**).
 
 4. Click on **Load Temporary Add-on** and select the `manifest.json` file from the directory where you cloned the repository.
+
+**Alternatively download the signed .xpi file from [releases](https://github.com/frustratedProton/reading-list-extension/releases)**
 
 ### For Edge
 
