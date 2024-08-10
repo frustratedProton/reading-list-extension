@@ -1,80 +1,119 @@
 document.getElementById('addButton').addEventListener('click', () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const url = tabs[0].url;
-    const title = tabs[0].title;
+	chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+		const { url, title } = tabs[0];
 
-    chrome.storage.sync.get({ readingList: [] }, (data) => {
-      const readingList = data.readingList;
+		const validTitle = title && title.trim() !== '' ? title : url;
 
-      if (!readingList.some((item) => item.url === url)) {
-        readingList.push({ url, title });
-        chrome.storage.sync.set({ readingList });
-        updateList();
-      } else {
-        showNotification('URL already in Reading List!');
-      }
-    });
-  });
+		chrome.storage.sync.get({ readingList: [] }, (data) => {
+			const readingList = data.readingList;
+
+			if (!readingList.some((item) => item.url === url)) {
+				readingList.push({ url, title: validTitle });
+				chrome.storage.sync.set({ readingList }, () => {
+					updateList();
+					chrome.browserAction.setBadgeText({
+						text: String(readingList.length),
+					});
+					showNotification('Added to Reading List!');
+				});
+			} else {
+				showNotification('URL already in Reading List!');
+			}
+		});
+	});
 });
 
 document.getElementById('removeAllButton').addEventListener('click', () => {
-  chrome.storage.sync.set({ readingList: [] }, () => {
-    updateList();
-  });
+	chrome.storage.sync.set({ readingList: [] }, () => {
+		updateList();
+		chrome.browserAction.setBadgeText({ text: '0' });
+		showNotification('Removed all items from Reading List!');
+	});
 });
 
-function removeItem(url) {
-  chrome.storage.sync.get({ readingList: [] }, (data) => {
-    const readingList = data.readingList.filter((item) => item.url !== url);
-    chrome.storage.sync.set({ readingList }, () => {
-      updateList();
-    });
-  });
-}
+const removeItem = (url) => {
+	chrome.storage.sync.get({ readingList: [] }, (data) => {
+		const readingList = data.readingList.filter((item) => item.url !== url);
+		chrome.storage.sync.set({ readingList }, () => {
+			updateList();
+			chrome.browserAction.setBadgeText({ text: String(readingList.length) });
+		});
+	});
+};
 
-function showNotification(message) {
-  const notification = document.getElementById('notification');
-  notification.textContent = message;
-  notification.style.display = 'block';
-  setTimeout(() => {
-    notification.style.display = 'none';
-  }, 3000);
-}
+const showNotification = (message) => {
+	const notification = document.getElementById('notification');
+	notification.textContent = message;
+	notification.style.display = 'block';
+	setTimeout(() => {
+		notification.style.display = 'none';
+	}, 3000);
+};
 
-function updateList() {
-  chrome.storage.sync.get({ readingList: [] }, (data) => {
-    const listElement = document.getElementById('readingList');
-    const removeAllButton = document.getElementById('removeAllButton');
-    const readingList = data.readingList;
+const updateList = () => {
+	chrome.storage.sync.get({ readingList: [] }, (data) => {
+		const listElement = document.getElementById('readingList');
+		const removeAllButton = document.getElementById('removeAllButton');
+		const { readingList } = data;
 
-    listElement.innerHTML = '';
+		listElement.innerHTML = '';
+		removeAllButton.style.display = readingList.length > 1 ? 'block' : 'none';
 
-    if (readingList.length === 0) {
-      removeAllButton.style.display = 'none';
-    } else {
-      removeAllButton.style.display = 'block';
-      readingList.forEach((item) => {
-        const li = document.createElement('li');
-        const link = document.createElement('a');
-        link.href = item.url;
-        link.textContent = item.title || item.url;
-        link.target = '_blank';
-        link.addEventListener('click', (event) => {
-          event.preventDefault();
-          chrome.tabs.create({ url: link.href });
-        });
+		readingList.forEach((item) => {
+			const li = document.createElement('li');
+			const link = document.createElement('a');
+			link.href = item.url;
+			link.textContent = item.title || item.url;
+			link.target = '_blank';
+			link.addEventListener('click', (event) => {
+				event.preventDefault();
+				chrome.tabs.create({ url: link.href });
+			});
 
-        const removeButton = document.createElement('button');
-        removeButton.textContent = 'X';
-        removeButton.className = 'remove-btn';
-        removeButton.addEventListener('click', () => removeItem(item.url));
+			const removeButton = document.createElement('button');
+			removeButton.textContent = 'X';
+			removeButton.className = 'remove-btn';
+			removeButton.addEventListener('click', () => removeItem(item.url));
 
-        li.appendChild(link);
-        li.appendChild(removeButton);
-        listElement.appendChild(li);
-      });
-    }
-  });
-}
+			li.appendChild(link);
+			li.appendChild(removeButton);
+			listElement.appendChild(li);
+		});
 
+		chrome.browserAction.setBadgeText({ text: String(readingList.length) });
+	});
+};
+
+const applyTheme = (theme) => {
+	document.documentElement.setAttribute('data-theme', theme);
+	chrome.storage.sync.set({ theme });
+};
+
+const initializeTheme = () => {
+	chrome.storage.sync.get({ theme: 'light' }, (data) => {
+		const savedTheme = data.theme;
+		if (savedTheme) {
+			applyTheme(savedTheme);
+			document.getElementById('toggleDarkMode').checked = savedTheme === 'dark';
+		} else {
+			const isDarkMode = window.matchMedia(
+				'(prefers-color-scheme: dark)'
+			).matches;
+			const initialTheme = isDarkMode ? 'dark' : 'light';
+			applyTheme(initialTheme);
+			document.getElementById('toggleDarkMode').checked = isDarkMode;
+		}
+	});
+};
+
+const handleThemeToggle = (event) => {
+	const theme = event.target.checked ? 'dark' : 'light';
+	applyTheme(theme);
+};
+
+document
+	.getElementById('toggleDarkMode')
+	.addEventListener('change', handleThemeToggle);
+
+initializeTheme();
 updateList();
